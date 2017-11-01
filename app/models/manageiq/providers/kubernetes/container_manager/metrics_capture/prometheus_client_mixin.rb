@@ -10,6 +10,8 @@ module ManageIQ::Providers::Kubernetes::ContainerManager::MetricsCapture::Promet
   end
 
   def prometheus_client_new(uri, credentials, options)
+    default_settings = Settings.prometheus_metrics || {}
+
     Faraday.new(
       :url     => uri.to_s,
       :proxy   => options[:http_proxy_uri].empty? ? nil : options[:http_proxy_uri],
@@ -18,8 +20,8 @@ module ManageIQ::Providers::Kubernetes::ContainerManager::MetricsCapture::Promet
         :cert_store => options[:ssl_cert_store]
       },
       :request => {
-        :open_timeout => 2, # opening a connection
-        :timeout      => 5  # waiting for response
+        :open_timeout => default_settings[:open_timeout] || 5,     # opening a connection
+        :timeout      => default_settings[:request_timeout] || 30  # waiting for response
       },
       :headers => {
         :Authorization => "Bearer " + credentials[:token]
